@@ -26,7 +26,7 @@ for _sub in (
         sys.path.insert(0, _sp)
 
 from order_events_db_manager import OrderEventDB
-from order_data_loader import sync_orders, sync_amendments
+from BinanceDataManagers.order_data_manager.order_data_loader import sync_orders, sync_amendments
 from user_trades_manager import UserTradeDB, sync_trades
 
 logger = logging.getLogger("collector.account_data_loader")
