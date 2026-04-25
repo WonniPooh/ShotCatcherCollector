@@ -96,6 +96,9 @@ async def main() -> None:
     _setup_logging()
     cfg = load_config()
 
+    if "--no-trades" in sys.argv:
+        cfg.trades_enabled = False
+
     if not cfg.api_key:
         logger.error("No API key configured — cannot start collector")
         return

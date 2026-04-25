@@ -55,9 +55,8 @@ def load_config(path: str | None = None) -> CollectorConfig:
             if hasattr(cfg, k):
                 setattr(cfg, k, v)
 
-    # Fall back to secrets.json if credentials not provided in the config file
     if not cfg.api_key:
-        secrets_path = _PROJECT_ROOT / "config" / "secrets.json"
+        secrets_path = _PROJECT_ROOT / "ShotCatcherWorker" / "config" / "secrets.json"
         if secrets_path.exists():
             with open(secrets_path) as f:
                 creds = json.load(f).get("credentials", [{}])[0]
