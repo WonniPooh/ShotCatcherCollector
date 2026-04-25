@@ -1,7 +1,7 @@
 """
 Account data loader — orchestrates order + trade + amendment sync for a symbol.
 
-Delegates all sync logic and row mapping to data_manager modules.
+Delegates all sync logic and row mapping to BinanceDataManagers modules.
 This file only owns: DB open/close lifecycle and start-time calculus
 (89-day cap, 2h lookback on restart).
 """
@@ -14,18 +14,18 @@ from pathlib import Path
 from typing import Any, Dict
 
 _project_root = Path(__file__).resolve().parent.parent
-# Add data_manager and each sub-package dir so that bare imports inside those
+# Add BinanceDataManagers and each sub-package dir so that bare imports inside those
 # modules (e.g. `from order_events_db_manager import ...`) also resolve.
 for _sub in (
     "",
-    "order_data_manager",
+    "order_BinanceDataManagers",
     "user_trades_manager",
 ):
-    _sp = str(_project_root / "data_manager" / _sub)
+    _sp = str(_project_root / "BinanceDataManagers" / _sub)
     if _sp not in sys.path:
         sys.path.insert(0, _sp)
 
-from order_data_manager import OrderEventDB, sync_orders, sync_amendments
+from order_BinanceDataManagers import OrderEventDB, sync_orders, sync_amendments
 from user_trades_manager import UserTradeDB, sync_trades
 
 logger = logging.getLogger("collector.account_data_loader")

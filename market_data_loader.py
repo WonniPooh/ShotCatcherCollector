@@ -72,7 +72,7 @@ async def download_klines_for_symbol(
     Returns total candles inserted.
     """
     import sys
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "data_manager"))
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "BinanceDataManagers"))
     from klines_db_manager import CandleDB
 
     sym_dir = _db_dir_for_symbol(db_root, symbol)
@@ -153,7 +153,7 @@ def ensure_klines_loading(db_root: str, symbol: str) -> Optional[asyncio.Task]:
 
     # Check if DB already has recent data (within last 2 hours)
     import sys
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "data_manager"))
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "BinanceDataManagers"))
     from klines_db_manager import CandleDB
 
     db_path = Path(db_root) / symbol / f"{symbol}_1m.db"

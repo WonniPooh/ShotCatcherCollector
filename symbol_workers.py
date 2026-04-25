@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from config import CollectorConfig
     from order_event_persister import OrderEventPersister
     from ws_server import CollectorWSServer
-    from data_manager.trades_manager.trades_loader import TradesLoader
+    from BinanceDataManagers.trades_manager.trades_loader import TradesLoader
 
 from account_data_loader import download_account_data_for_symbol
 
@@ -46,6 +46,7 @@ class SymbolWorkerManager:
         self._account_tasks: dict[str, asyncio.Task] = {}
         self._ui_load_symbol: str | None = None
         self._full_order_resync = full_order_resync
+        self._trades_enabled = cfg.trades_enabled
 
         self._status_task: asyncio.Task | None = None
 
@@ -116,10 +117,13 @@ class SymbolWorkerManager:
             self._trades_loader.cancel(symbol)
 
         if existing is None or existing.done() or priority:
-            self._trades_tasks[symbol] = asyncio.create_task(
-                self._run_trades(symbol, priority=priority),
-                name=f"trades-{symbol}",
-            )
+            if self._trades_enabled:
+                self._trades_tasks[symbol] = asyncio.create_task(
+                    self._run_trades(symbol, priority=priority),
+                    name=f"trades-{symbol}",
+                )
+            else:
+                logger.debug("[%s] trades_enabled=false — skipping trades backfill", symbol)
 
         if symbol not in self._account_tasks or self._account_tasks[symbol].done():
             self._account_tasks[symbol] = asyncio.create_task(

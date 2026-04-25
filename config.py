@@ -30,6 +30,11 @@ class CollectorConfig:
     account_sync_interval_min: int = 60
     symbol_inactive_prune_days: int = 7
 
+    # When False, skip aggTrades REST backfill entirely (no historical
+    # trade scroll-back on the chart). Account sync (orders/fills) still runs.
+    # Set via collector.json: {"trades_enabled": false}
+    trades_enabled: bool = True
+
 
 def load_config(path: str | None = None) -> CollectorConfig:
     """

@@ -19,7 +19,7 @@ import signal
 import sys
 from pathlib import Path
 
-# Add project root to sys.path for data_manager package imports
+# Add project root to sys.path for BinanceDataManagers package imports
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
@@ -31,8 +31,8 @@ from symbol_tracker import SymbolTracker
 from symbol_workers import SymbolWorkerManager
 from event_dispatcher import EventDispatcher
 from ws_server import CollectorWSServer
-from data_manager.trades_manager.trades_loader import TradesLoader
-from data_manager.binance_rate_limiter import bnx_limiter
+from BinanceDataManagers.trades_manager.trades_loader import TradesLoader
+from BinanceDataManagers.binance_rate_limiter import bnx_limiter
 from order_event_persister import OrderEventPersister
 from dashboard import Dashboard
 

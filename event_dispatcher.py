@@ -18,9 +18,9 @@ if TYPE_CHECKING:
     from symbol_workers import SymbolWorkerManager
     from ws_server import CollectorWSServer
 
-from data_manager.order_data_manager import ws_order_event_to_row
-from data_manager.user_trades_manager import ws_event_to_trade_row
-from data_manager.position_manager.position_tracker import LivePositionTracker
+from BinanceDataManagers.order_BinanceDataManagers import ws_order_event_to_row
+from BinanceDataManagers.user_trades_manager import ws_event_to_trade_row
+from BinanceDataManagers.position_manager.position_tracker import LivePositionTracker
 
 logger = logging.getLogger("collector.event_dispatcher")
 

@@ -30,8 +30,8 @@ if TYPE_CHECKING:
     from collector.order_event_persister import OrderEventPersister
     from collector.symbol_tracker import SymbolTracker
     from collector.user_data_ws import UserDataWS
-    from data_manager.binance_rate_limiter import BinanceRateLimiter
-    from data_manager.trades_manager.trades_loader import TradesLoader
+    from BinanceDataManagers.binance_rate_limiter import BinanceRateLimiter
+    from BinanceDataManagers.trades_manager.trades_loader import TradesLoader
 
 
 class _LogCapture(logging.Handler):

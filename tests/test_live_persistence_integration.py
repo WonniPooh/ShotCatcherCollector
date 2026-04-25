@@ -44,9 +44,9 @@ from typing import Any, Dict, List, Optional
 _project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_project_root))
 sys.path.insert(0, str(_project_root / "collector"))
-sys.path.insert(0, str(_project_root / "data_manager"))
-sys.path.insert(0, str(_project_root / "data_manager" / "order_data_manager"))
-sys.path.insert(0, str(_project_root / "data_manager" / "user_trades_manager"))
+sys.path.insert(0, str(_project_root / "BinanceDataManagers"))
+sys.path.insert(0, str(_project_root / "BinanceDataManagers" / "order_BinanceDataManagers"))
+sys.path.insert(0, str(_project_root / "BinanceDataManagers" / "user_trades_manager"))
 
 from collector.binance_futures_client import BinanceFuturesClient, BinanceAPIError
 from collector.user_data_ws import UserDataWS

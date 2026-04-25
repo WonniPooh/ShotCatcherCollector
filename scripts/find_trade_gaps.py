@@ -23,7 +23,7 @@ from pathlib import Path
 
 # Allow running from repo root: python collector/scripts/find_trade_gaps.py
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(_PROJECT_ROOT / "data_manager"))
+sys.path.insert(0, str(_PROJECT_ROOT / "BinanceDataManagers"))
 
 from trades_manager.trades_db_manager import AggTradeDB
 
