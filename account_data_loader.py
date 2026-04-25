@@ -18,14 +18,14 @@ _project_root = Path(__file__).resolve().parent.parent
 # modules (e.g. `from order_events_db_manager import ...`) also resolve.
 for _sub in (
     "",
-    "order_BinanceDataManagers",
+    "order_data_manager",
     "user_trades_manager",
 ):
     _sp = str(_project_root / "BinanceDataManagers" / _sub)
     if _sp not in sys.path:
         sys.path.insert(0, _sp)
 
-from order_BinanceDataManagers import OrderEventDB, sync_orders, sync_amendments
+from order_events_db_manager import OrderEventDB, sync_orders, sync_amendments
 from user_trades_manager import UserTradeDB, sync_trades
 
 logger = logging.getLogger("collector.account_data_loader")

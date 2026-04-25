@@ -22,11 +22,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "BinanceDataManagers"))
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "BinanceDataManagers" / "order_BinanceDataManagers"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "BinanceDataManagers" / "order_data_manager"))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "BinanceDataManagers" / "user_trades_manager"))
 
 from order_event_persister import OrderEventPersister
-from order_BinanceDataManagers.order_data_loader import ws_order_event_to_row
+from order_data_manager.order_data_loader import ws_order_event_to_row
 from user_trades_manager.user_trades_loader import ws_event_to_trade_row
 
 TEST_DB_DIR = "logs/test_order_event_persister"

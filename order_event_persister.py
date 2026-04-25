@@ -3,7 +3,7 @@ OrderEventPersister — persists UserDataWS ORDER_TRADE_UPDATE events to SQLite.
 
 Manages per-symbol DB handles (opened on demand, cached for reuse).
 Maps parsed WS events (short Binance keys) to DB row format using mappers
-from BinanceDataManagers.order_BinanceDataManagers and BinanceDataManagers.user_trades_manager.
+from BinanceDataManagers.order_data_manager and BinanceDataManagers.user_trades_manager.
 
 Amendment handling:
   Tracks (price, qty) per order in memory.  When an AMENDMENT event arrives:
@@ -41,12 +41,12 @@ _dm_path = str(_project_root / "BinanceDataManagers")
 if _dm_path not in sys.path:
     sys.path.insert(0, _dm_path)
 
-for _sub in ("order_BinanceDataManagers", "user_trades_manager"):
+for _sub in ("order_data_manager", "user_trades_manager"):
     _sp = str(_project_root / "BinanceDataManagers" / _sub)
     if _sp not in sys.path:
         sys.path.insert(0, _sp)
 
-from order_BinanceDataManagers import OrderEventDB, ws_order_event_to_row, sync_amendments_for_order
+from order_data_manager import OrderEventDB, ws_order_event_to_row, sync_amendments_for_order
 from user_trades_manager import UserTradeDB, ws_event_to_trade_row
 
 logger = logging.getLogger("collector.order_event_persister")
@@ -326,7 +326,7 @@ class OrderEventPersister:
             )
             target_orders = [o for o in orders if int(o["orderId"]) == order_id]
             if target_orders:
-                from order_BinanceDataManagers.order_data_loader import _live_order_to_row
+                from order_data_manager.order_data_loader import _live_order_to_row
                 rows = [_live_order_to_row(o) for o in target_orders]
                 order_db.insert_rows(rows)
                 logger.info("[%s] repair_order: inserted %d order events for order %d",
