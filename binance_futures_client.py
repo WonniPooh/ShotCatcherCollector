@@ -223,6 +223,23 @@ class BinanceFuturesClient:
             params["endTime"] = end_time
         return await self._get("/fapi/v1/orderAmendment", params)
 
+    async def get_income_history(
+        self,
+        start_time: int | None = None,
+        end_time: int | None = None,
+        limit: int = 1000,
+    ) -> List[Dict[str, Any]]:
+        """GET /fapi/v1/income — weight 30. Returns income records (PnL, commission, funding).
+
+        No symbol param = all symbols. Max 1000 per page, paginate via startTime.
+        """
+        params: Dict[str, Any] = {"limit": limit}
+        if start_time is not None:
+            params["startTime"] = start_time
+        if end_time is not None:
+            params["endTime"] = end_time
+        return await self._get("/fapi/v1/income", params, weight=30)
+
     # ── listen key ──────────────────────────────────────────────────────
 
     async def create_listen_key(self) -> str:
