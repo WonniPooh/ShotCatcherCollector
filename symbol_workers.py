@@ -139,6 +139,20 @@ class SymbolWorkerManager:
                 task.cancel()
         self._trades_loader.cancel(symbol)
 
+    def on_ws_reconnect(self, watched_symbols: frozenset[str]) -> None:
+        """Re-sync account data for all watched symbols after a WS reconnect.
+
+        Called when the user data WS reconnects (e.g. after a stale connection).
+        Any orders/fills/positions that arrived during the gap are fetched via REST.
+        """
+        logger.info("WS reconnect — re-syncing account data for %d symbols", len(watched_symbols))
+        for symbol in watched_symbols:
+            if symbol not in self._account_tasks or self._account_tasks[symbol].done():
+                self._account_tasks[symbol] = asyncio.create_task(
+                    self._run_account_sync(symbol),
+                    name=f"account-{symbol}",
+                )
+
     async def shutdown(self) -> None:
         """Cancel all per-symbol tasks and the status consumer."""
         pending: list[asyncio.Task] = []

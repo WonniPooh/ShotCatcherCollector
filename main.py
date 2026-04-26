@@ -179,6 +179,7 @@ async def main() -> None:
         rest_client,
         on_order_event=dispatcher.on_order_event,
         on_account_update=tracker.on_account_update,
+        on_reconnect=lambda: workers.on_ws_reconnect(tracker.watched_symbols),
     )
 
     # ── Start ─────────────────────────────────────────────────────────

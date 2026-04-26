@@ -31,6 +31,11 @@ MAINNET_WS = "wss://fstream.binance.com/private/ws?listenKey="
 # Keepalive interval (Binance requires < 60min, we use 30min)
 _KEEPALIVE_INTERVAL_S = 30 * 60
 
+# If no WS message arrives within this window, force reconnect.
+# Binance normally sends at least pong frames; a silent stream indicates
+# the listen key may have been invalidated without a listenKeyExpired event.
+_STALENESS_TIMEOUT_S = 5 * 60  # 5 minutes
+
 
 class UserDataWS:
     """
@@ -49,16 +54,19 @@ class UserDataWS:
         *,
         on_order_event: Optional[Callable[[Dict[str, Any]], None]] = None,
         on_account_update: Optional[Callable[[Dict[str, Any]], None]] = None,
+        on_reconnect: Optional[Callable[[], None]] = None,
         reconnect_interval: float = 5.0,
     ):
         self._client = rest_client
         self._on_order_event = on_order_event
         self._on_account_update = on_account_update
+        self._on_reconnect = on_reconnect
         self._base_ws = MAINNET_WS
         self._reconnect_interval = reconnect_interval
 
         self._task: Optional[asyncio.Task] = None
         self._keepalive_task: Optional[asyncio.Task] = None
+        self._staleness_task: Optional[asyncio.Task] = None
         self._listen_key: Optional[str] = None
         self._connected = False
         self._ws: Any = None
@@ -88,13 +96,15 @@ class UserDataWS:
 
     async def stop(self) -> None:
         """Cancel the connection loop and close cleanly."""
-        if self._keepalive_task:
-            self._keepalive_task.cancel()
-            try:
-                await self._keepalive_task
-            except asyncio.CancelledError:
-                pass
-            self._keepalive_task = None
+        for task_attr in ('_staleness_task', '_keepalive_task'):
+            task = getattr(self, task_attr, None)
+            if task:
+                task.cancel()
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+                setattr(self, task_attr, None)
 
         if self._task:
             self._task.cancel()
@@ -141,15 +151,26 @@ class UserDataWS:
                     self._ws = ws
                     self._connected = True
                     self._last_event_time = time.time()
+                    is_reconnect = reconnect_count > 1
                     logger.info(
                         "user_data_ws: connected (attempt #%d, reconnects=%d)",
                         reconnect_count, reconnect_count - 1,
                     )
 
+                    # On reconnect, trigger account resync to fill the gap
+                    if is_reconnect and self._on_reconnect:
+                        logger.info("user_data_ws: reconnect detected — triggering account resync")
+                        self._on_reconnect()
+
                     # Start keepalive loop
                     self._keepalive_task = asyncio.create_task(
                         self._keepalive_loop(),
                         name="user-data-keepalive",
+                    )
+                    # Start staleness watchdog
+                    self._staleness_task = asyncio.create_task(
+                        self._staleness_watchdog(ws),
+                        name="user-data-staleness",
                     )
 
                     try:
@@ -165,13 +186,15 @@ class UserDataWS:
                             self._last_event_time = time.time()
                             self._dispatch(msg)
                     finally:
-                        if self._keepalive_task is not None:
-                            self._keepalive_task.cancel()
-                            try:
-                                await self._keepalive_task
-                            except asyncio.CancelledError:
-                                pass
-                            self._keepalive_task = None
+                        for task_attr in ('_staleness_task', '_keepalive_task'):
+                            task = getattr(self, task_attr, None)
+                            if task is not None:
+                                task.cancel()
+                                try:
+                                    await task
+                                except asyncio.CancelledError:
+                                    pass
+                                setattr(self, task_attr, None)
 
             except (ConnectionClosed, OSError, asyncio.TimeoutError) as exc:
                 logger.warning(
@@ -202,6 +225,27 @@ class UserDataWS:
                 logger.debug("user_data_ws: listen key keepalive sent")
             except Exception as exc:
                 logger.warning("user_data_ws: keepalive failed: %s", exc)
+
+    async def _staleness_watchdog(self, ws) -> None:
+        """Close the WS if no messages arrive within _STALENESS_TIMEOUT_S.
+
+        Binance normally sends data or at least pong frames frequently.
+        A fully silent stream likely means the listen key was invalidated
+        without a listenKeyExpired event, so we force a reconnect.
+        """
+        while True:
+            await asyncio.sleep(60)  # check every minute
+            elapsed = time.time() - self._last_event_time
+            if elapsed >= _STALENESS_TIMEOUT_S:
+                logger.warning(
+                    "user_data_ws: no messages for %.0fs — forcing reconnect",
+                    elapsed,
+                )
+                try:
+                    await ws.close()
+                except Exception:
+                    pass
+                return
 
     # ── Event dispatch ──────────────────────────────────────────────────
 
